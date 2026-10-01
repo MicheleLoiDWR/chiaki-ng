@@ -133,6 +133,18 @@ class TouchpadView @JvmOverloads constructor(
 					triggerStateChanged()
 				}
 			}
+			MotionEvent.ACTION_CANCEL -> {
+				// The system took over the gesture (e.g. a navigation swipe): release everything,
+				// without treating it as a tap.
+				pointerTouches.values.forEach {
+					removeCallbacks(it.startButtonHoldRunnable)
+					state.stopTouch(it.stateId)
+				}
+				pointerTouches.clear()
+				buttonHeld = false
+				state.buttons = state.buttons and ControllerState.BUTTON_TOUCHPAD.inv()
+				triggerStateChanged()
+			}
 			MotionEvent.ACTION_MOVE -> {
 				val changed = pointerTouches.entries.fold(false) { acc, it ->
 					val index = event.findPointerIndex(it.key)
